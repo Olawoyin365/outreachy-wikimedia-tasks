@@ -256,6 +256,28 @@ Follows requirements specification exactly
 
 ---
 
+## AI Usage Disclosure
+
+I used Claude (Anthropic) as a learning companion and debugging assistant during the development of these microtasks. My approach was collaborative rather than generative:
+
+**How I used AI:**
+- **Understanding requirements**: Discussed the project requirements and wishlist proposals to ensure I fully understood what was being asked
+- **Debugging assistance**: When I encountered issues (e.g., Task 1 not displaying output), I used developer tools to identify errors, then discussed the problem and potential solutions
+- **Code review**: After writing my own logic, I reviewed it with AI to check for edge cases, best practices, and potential improvements
+- **Learning technical concepts**: Asked questions about MediaWiki APIs, Wikibase, and other technologies to deepen my understanding of the project ecosystem
+
+**What I did myself:**
+- Wrote all core logic and algorithms independently
+- Made all technical decisions about implementation approach
+- Tested and validated all code outputs
+- Debugged issues using browser developer tools and error messages
+- Understood and can explain every line of code submitted
+
+**My philosophy:**
+I treated AI as a knowledgeable peer reviewer and teacher, not as a code generator. Each piece of code was written iteratively, I would implement a section, test it, understand any issues, and refine it before moving forward. This approach helped me learn more effectively while ensuring I fully own and understand my contributions.
+
+I can explain, justify, and modify any part of the submitted code without assistance.
+
 ## Submission Information
 
 **Submitted to:** tecnologia@wmnobrasil.org  
