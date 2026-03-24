@@ -230,7 +230,7 @@ Follows requirements specification exactly
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
 ### Task 1: JavaScript Date Formatter
 
