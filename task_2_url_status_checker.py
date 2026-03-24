@@ -108,7 +108,7 @@ def get_status_code(url: str) -> Tuple[int, str]:
         Tuple of (status_code, url)
     """
     try:
-        # Set headers to mimic a real browser (some sites block scripts)
+        # Set headers to mimic a real browser
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                           '(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -136,7 +136,7 @@ def main():
     """
     Main function to read URLs from CSV and print their status codes.
     """
-    # Define the input CSV filename (keeping original naming)
+    # Define the input CSV filename
     csv_filename = 'Task 2 - Intern.csv'
     
     print(f"Reading URLs from '{csv_filename}'...\n")
@@ -165,12 +165,12 @@ def main():
         # Print in required format: (STATUS CODE) URL
         print(f"({status_code}) {checked_url}")
         
-        # Optional: Show progress every 20 URLs
+        # Show progress every 20 URLs
         if index % 20 == 0:
             print(f"--- Processed {index}/{len(urls)} URLs ---")
     
     print("=" * 100)
-    print(f"\n✓ Completed checking {len(urls)} URLs.")
+    print(f"\nCompleted checking {len(urls)} URLs.")
 
 
 if __name__ == "__main__":
