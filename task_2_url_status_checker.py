@@ -11,166 +11,61 @@ from typing import List, Tuple
 
 
 def read_urls_from_csv(filename: str) -> List[str]:
-    """
-    Read URLs from a CSV file.
-    
-    Args:
-        filename: Path to the CSV file containing URLs
-        
-    Returns:
-        List of URLs as strings
-    """
+    """Read URLs from a CSV file focusing on simplicity and robustness."""
     urls = []
-    
     try:
-        # Try different encodings to handle various CSV formats
-        encodings = ['utf-8-sig', 'utf-8', 'latin-1', 'cp1252']
-        
-        file_opened = False
-        for encoding in encodings:
-            try:
-                with open(filename, 'r', encoding=encoding, newline='') as file:
-                    # Read the first line to check the header
-                    first_line = file.readline().strip()
-                    print(f"CSV Header detected: '{first_line}'")
-                    
-                    # Reset file pointer to beginning
-                    file.seek(0)
-                    
-                    # Try reading as DictReader first
-                    csv_reader = csv.DictReader(file)
-                    
-                    # Get the actual column names from the CSV
-                    if csv_reader.fieldnames:
-                        print(f"Column names found: {csv_reader.fieldnames}")
-                        
-                        # Find the column that contains URLs
-                        url_column = None
-                        for field in csv_reader.fieldnames:
-                            field_clean = field.strip().lower()
-                            if 'url' in field_clean:
-                                url_column = field
-                                break
-                        
-                        if url_column:
-                            print(f"Using column: '{url_column}'")
-                            
-                            # Extract URLs from the identified column
-                            for row in csv_reader:
-                                url = row[url_column].strip()
-                                if url and url.startswith('http'):
-                                    urls.append(url)
-                            
-                            file_opened = True
-                            break
-                        else:
-                            # If no 'urls' column, try reading as simple list
-                            file.seek(0)
-                            next(file)  # Skip header
-                            for line in file:
-                                url = line.strip()
-                                if url and url.startswith('http'):
-                                    urls.append(url)
-                            file_opened = True
-                            break
-                    
-            except (UnicodeDecodeError, UnicodeError):
-                continue  # Try next encoding
-            except Exception as e:
-                print(f"Error with encoding {encoding}: {e}")
-                continue
-        
-        if not file_opened:
-            print(f"Error: Could not read file '{filename}' with any encoding.")
-            return []
+        with open(filename, 'r', encoding='utf-8-sig', newline='') as file:
+            csv_reader = csv.DictReader(file)
+            # Find a column that looks like it contains URLs (handling typos like 'uls')
+            url_col = None
+            if csv_reader.fieldnames:
+                for f in csv_reader.fieldnames:
+                    f_low = f.lower().strip()
+                    if 'url' in f_low or 'uls' in f_low or 'http' in f_low:
+                        url_col = f
+                        break
+                # Fallback to the first column if no match is found
+                if not url_col and csv_reader.fieldnames:
+                    url_col = csv_reader.fieldnames[0]
             
-    except FileNotFoundError:
-        print(f"Error: File '{filename}' not found.")
-        print(f"Current directory contents:")
-        import os
-        print(os.listdir('.'))
-        return []
+            if url_col:
+                for row in csv_reader:
+                    url = row[url_col].strip()
+                    if url.startswith('http'):
+                        urls.append(url)
     except Exception as e:
-        print(f"Unexpected error reading CSV file: {e}")
-        return []
-    
+        print(f"Error reading {filename}: {e}")
     return urls
 
 
 def get_status_code(url: str) -> Tuple[int, str]:
-    """
-    Get the HTTP status code for a given URL.
-    
-    Args:
-        url: The URL to check
-        
-    Returns:
-        Tuple of (status_code, url)
-    """
+    """Get HTTP status code using a HEAD request for optimization."""
     try:
-        # Set headers to mimic a real browser
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                          '(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        
-        # Send GET request with timeout and custom headers
-        response = requests.get(url, timeout=10, headers=headers, allow_redirects=True)
-        
+        # Use HEAD request as recommended by mentors to save bandwidth
+        response = requests.head(url, timeout=10, allow_redirects=True)
         return (response.status_code, url)
-        
-    except requests.exceptions.Timeout:
-        return (408, url)  # Request Timeout
-        
-    except requests.exceptions.ConnectionError:
-        return (503, url)  # Service Unavailable
-        
-    except requests.exceptions.TooManyRedirects:
-        return (310, url)  # Too Many Redirects
-        
-    except requests.exceptions.RequestException:
-        return (500, url)  # Internal Server Error
+    except requests.RequestException:
+        # Fallback to GET if HEAD is not supported by the server
+        try:
+            response = requests.get(url, timeout=10, allow_redirects=True)
+            return (response.status_code, url)
+        except requests.RequestException:
+            return (0, url)
 
 
 def main():
-    """
-    Main function to read URLs from CSV and print their status codes.
-    """
-    # Define the input CSV filename
+    """Main function: concise implementation for URL status checking."""
     csv_filename = 'Task 2 - Intern.csv'
-    
-    print(f"Reading URLs from '{csv_filename}'...\n")
-    
-    # Read all URLs from the CSV file
     urls = read_urls_from_csv(csv_filename)
     
-    # Check if we got any URLs
     if not urls:
-        print("\nNo URLs found to process.")
-        print("\nTroubleshooting tips:")
-        print("1. Make sure 'Task 2 - Intern.csv' is in the same folder as this script")
-        print("2. Check that the CSV file has a header row with 'urls' column")
-        print("3. Verify the CSV file is not corrupted")
+        print("No URLs found.")
         return
-    
-    print(f"\nFound {len(urls)} URLs. Starting status code checks...")
-    print("This may take a few minutes...\n")
-    print("=" * 100)
-    
-    # Process each URL and print result in required format
-    for index, url in enumerate(urls, 1):
-        # Get status code for this URL
+
+    # Process each URL and print result in required format: (STATUS CODE) URL
+    for url in urls:
         status_code, checked_url = get_status_code(url)
-        
-        # Print in required format: (STATUS CODE) URL
         print(f"({status_code}) {checked_url}")
-        
-        # Show progress every 20 URLs
-        if index % 20 == 0:
-            print(f"--- Processed {index}/{len(urls)} URLs ---")
-    
-    print("=" * 100)
-    print(f"\nCompleted checking {len(urls)} URLs.")
 
 
 if __name__ == "__main__":
